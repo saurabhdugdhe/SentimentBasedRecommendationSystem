@@ -1,28 +1,35 @@
+# Importing libraries
 import pandas as pd
 import numpy as np
 import pickle
 
-ROOT_PATH = "pickle//"
-MODEL_NAME = "SentimentClassificationXGBoostModel.pkl"
-VECTORIZER = "tfidfVectorizer.pkl"
-RECOMMENDER = "UserBasedRecommendationModel.pkl"
-CLEANED_DATA = "CleanedData.pkl"
+# Constants
+root_path = "pickle//"
+XGBoost_model = "SentimentClassificationXGBoostModel.pkl"
+tfidfVectorizer = "tfidfVectorizer.pkl"
+recommender = "UserBasedRecommendationModel.pkl"
+cleanData = "CleanedData.pkl"
 
+# Sentiment based recommendations
 def GetSentimentRecommendations(user):
 
-    XGBoostModel = pickle.load(open(ROOT_PATH + MODEL_NAME, 'rb'))
-    vectorizer = pd.read_pickle(ROOT_PATH + VECTORIZER)
-    UserBasedRecommendationModel = pickle.load(open(ROOT_PATH + RECOMMENDER, 'rb'))
+    XGBoostModel = pickle.load(open(root_path + XGBoost_model, 'rb'))
+    vectorizer = pd.read_pickle(root_path + tfidfVectorizer)
+    UserBasedRecommendationModel = pickle.load(open(root_path + recommender, 'rb'))
     data = pd.read_csv("sample30.csv")
-    cleanedData = pickle.load(open(ROOT_PATH + CLEANED_DATA, 'rb'))
+    cleanedData = pickle.load(open(root_path + cleanData, 'rb'))
 
-    if (user in UserBasedRecommendationModel.index):
+    if (user not in UserBasedRecommendationModel.index):
+        print(f"Username {user} does not exist.")
+        return None
+    
+    else:
         # Get the product recommendations using the trained ML model 'UserBasedRecommendationModel'
         recommendations = list(UserBasedRecommendationModel.loc[user].sort_values(ascending=False)[0:20].index)
         filteredData = cleanedData[cleanedData.id.isin(recommendations)]
 
         # transform the input data using saved tf-idf vectorizer
-        X = vectorizer.transform(filteredData["reviews_text_cleaned"].values.astype(str))
+        X = vectorizer.transform(filteredData["reviews_Lemmatext"].values.astype(str))
         
         # Predict using the saved XGBoost model
         filteredData["predicted_sentiment"] = XGBoostModel.predict(X)
@@ -35,9 +42,6 @@ def GetSentimentRecommendations(user):
         sorted_products = temp_grouped.sort_values('positive_sentiment_percent', ascending=False)[0:5]
         
         return pd.merge(data, sorted_products, on="id")[
-            ["name", "brand", "manufacturer", "positive_sentiment_percent"]].drop_duplicates().sort_values(
+            ["name", "brand", "positive_sentiment_percent"]].drop_duplicates().sort_values(
             ['positive_sentiment_percent', 'name'], ascending=[False, True])
-
-    else:
-        print(f"User name {user} doesn't exist")
-        return None
+        
