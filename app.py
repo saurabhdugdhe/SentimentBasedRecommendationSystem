@@ -13,13 +13,13 @@ def home():
 def prediction():
 
     user = request.form['username'].lower()
-    items = GetSentimentRecommendations(user)
+    recommendations = GetSentimentRecommendations(user)
 
-    if(not(items is None)):
-        print(f"retrieving items....{len(items)}")
-        print(items)
+    if(not(recommendations is None)):
+        print(f"Retrieving top {len(recommendations)} recommendations")
+        print(recommendations)
 
-        return render_template("index.html", user_name=user, column_names=items.columns.values, row_data=list(items.values.tolist()), zip=zip)
+        return render_template("index.html", user_name=user, column_names=recommendations.columns.values, row_data=list(recommendations.values.tolist()), zip=zip)
     else:
         return render_template("index.html", message=f"Invalid username: \"{user}\"")
 
