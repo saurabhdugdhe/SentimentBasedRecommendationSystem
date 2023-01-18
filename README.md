@@ -1,5 +1,8 @@
 # Sentiment Based Product Recommendation System
 
+## App demo using streamlit
+Check out https://saurabhdugdhe-sentimentbasedproductrecomme-streamlit-app-ngfywy.streamlit.app/
+
 ## Table of Contents
 * [Problem Statement](#problem-statement)
 * [Data](#data)
